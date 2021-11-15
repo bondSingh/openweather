@@ -22,12 +22,12 @@ This README would normally document whatever steps are necessary to get your app
 ### Who do I talk to? ###
 
 * 1202satish@gmail.com
-*[LinkedIn](https://www.linkedin.com/in/satish-singh-96856762/)
+[LinkedIn](https://www.linkedin.com/in/satish-singh-96856762/)
 
 ### References ###
 * using openWeatherMap api to get the data [openWeatherMap](https://openweathermap.org/ )
 
-*Project Structure*
+*Project Structure
 |-- AndroidManifest.xml
 |-- ic_launcher-playstore.png
 |-- java
