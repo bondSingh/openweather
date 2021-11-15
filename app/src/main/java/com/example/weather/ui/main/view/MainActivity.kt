@@ -46,17 +46,18 @@ class MainActivity : AppCompatActivity(), LocationListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = MainActivityBinding.inflate(layoutInflater)
-        //AppCompatDelegate.setDefaultNightMode(MODE_NIGHT_YES);
-        //AppCompatDelegate.setDefaultNightMode(MODE_NIGHT_NO);
-        searchCity = "london"
-
         setContentView(binding.root)
         setupViewModel()
-        getLocation()
+
     }
 
     override fun onStart() {
         super.onStart()
+
+        setupObservers()
+        if(viewModel.weatherLiveData.value==null) {
+            getLocation()
+        }
         binding.icEditLocation?.clickWithDebounce {
             binding.addressContainer.visibility = View.GONE
             binding.searchContainer?.visibility = View.VISIBLE
@@ -71,7 +72,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
             binding.addressContainer.visibility = View.VISIBLE
             binding.searchContainer?.visibility = View.GONE
             binding.icEditLocation?.visibility = View.VISIBLE
-            setupObservers()
+            viewModel.getWeather(searchCity)
+            //setupObservers()
         }
     }
 
@@ -80,10 +82,12 @@ class MainActivity : AppCompatActivity(), LocationListener {
             this,
             ViewModelFactory(ApiHelper(RetrofitBuilder.apiService))
         )[MainViewModel::class.java]
+
+
     }
 
     private fun setupObservers() {
-        viewModel.getWeather(searchCity).observe(this, {
+        viewModel.weatherLiveData.observe(this, {
             it?.let { resource ->
                 when (resource.status) {
                     Status.SUCCESS -> {
@@ -117,7 +121,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         })
     }
 
-    private fun getWeatherForCurrentLocation(location: Location) {
+    /*private fun getWeatherForCurrentLocation(location: Location) {
         viewModel.getCurrentLocationWeather(location.latitude, location.longitude).observe(this, {
             it?.let { resource ->
                 when (resource.status) {
@@ -150,9 +154,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 }
             }
         })
-    }
+    }*/
 
     private fun updateWeatherView(weather: WeatherModel) {
+        searchCity = weather.name
         binding.address.text = weather.name
         binding.updatedAt.text = "Updated at: " + SimpleDateFormat("hh:mm aa")
             .format(Date((weather.dt) * 1000))
@@ -182,6 +187,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun getLocation() {
+        Log.d(TAG, "getLocation")
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if ((ContextCompat.checkSelfPermission(
                 this,
@@ -198,7 +204,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
-        getWeatherForCurrentLocation(location)
+        viewModel.getCurrentLocationWeather(location.latitude, location.longitude)
     }
 
     override fun onRequestPermissionsResult(
