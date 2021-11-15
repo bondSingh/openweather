@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Weather Demo</string>
+    <string name="enter_valid_city">Please Enter a valid City</string>
+    <string name="something_went_wrong">Something went wrong</string>
+</resources>
