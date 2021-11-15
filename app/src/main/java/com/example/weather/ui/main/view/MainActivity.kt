@@ -33,11 +33,11 @@ import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MainActivity : AppCompatActivity() , LocationListener {
+class MainActivity : AppCompatActivity(), LocationListener {
 
     private lateinit var viewModel: MainViewModel
-    private lateinit var binding : MainActivityBinding
-    private lateinit var searchCity : String
+    private lateinit var binding: MainActivityBinding
+    private lateinit var searchCity: String
     private val TAG = "satyLogs"
     var decimalFormat = DecimalFormat("##.#")
     private lateinit var locationManager: LocationManager
@@ -46,10 +46,10 @@ class MainActivity : AppCompatActivity() , LocationListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = MainActivityBinding.inflate(layoutInflater)
-        AppCompatDelegate.setDefaultNightMode(MODE_NIGHT_YES);
-
-        searchCity = "london"
+        //AppCompatDelegate.setDefaultNightMode(MODE_NIGHT_YES);
         //AppCompatDelegate.setDefaultNightMode(MODE_NIGHT_NO);
+        searchCity = "london"
+
         setContentView(binding.root)
         setupViewModel()
         getLocation()
@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() , LocationListener {
 
     override fun onStart() {
         super.onStart()
-        binding.icEditLocation?.clickWithDebounce{
+        binding.icEditLocation?.clickWithDebounce {
             binding.addressContainer.visibility = View.GONE
             binding.searchContainer?.visibility = View.VISIBLE
             binding.icEditLocation?.visibility = View.GONE
@@ -93,10 +93,18 @@ class MainActivity : AppCompatActivity() , LocationListener {
                     }
                     Status.ERROR -> {
                         Log.d(TAG, "Status.ERROR")
-                        if(resource.message?.contains("404") == true){
-                            Toast.makeText(this, getString(R.string.enter_valid_city), Toast.LENGTH_SHORT).show()
-                        } else{
-                            Toast.makeText(this, getString(R.string.something_went_wrong), Toast.LENGTH_SHORT).show()
+                        if (resource.message?.contains("404") == true) {
+                            Toast.makeText(
+                                this,
+                                getString(R.string.enter_valid_city),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            Toast.makeText(
+                                this,
+                                getString(R.string.something_went_wrong),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                         binding.loader.visibility = View.GONE
                     }
@@ -120,10 +128,18 @@ class MainActivity : AppCompatActivity() , LocationListener {
                     }
                     Status.ERROR -> {
                         Log.d(TAG, "Status.ERROR")
-                        if(resource.message?.contains("404") == true){
-                            Toast.makeText(this, getString(R.string.enter_valid_city), Toast.LENGTH_SHORT).show()
-                        } else{
-                            Toast.makeText(this, getString(R.string.something_went_wrong), Toast.LENGTH_SHORT).show()
+                        if (resource.message?.contains("404") == true) {
+                            Toast.makeText(
+                                this,
+                                getString(R.string.enter_valid_city),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            Toast.makeText(
+                                this,
+                                getString(R.string.something_went_wrong),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                         binding.loader.visibility = View.GONE
                     }
@@ -138,20 +154,23 @@ class MainActivity : AppCompatActivity() , LocationListener {
 
     private fun updateWeatherView(weather: WeatherModel) {
         binding.address.text = weather.name
-        binding.updatedAt.text = "Updated at: "+SimpleDateFormat("hh:mm aa")
-            .format(Date((weather.dt)*1000))
+        binding.updatedAt.text = "Updated at: " + SimpleDateFormat("hh:mm aa")
+            .format(Date((weather.dt) * 1000))
         binding.status.text = weather.weather[0].description
         binding.temp.text = decimalFormat.format(weather.main.temp).toString() + "°C"
-        binding.feelsLike.text = "Feels Like: "+decimalFormat.format(weather.main.feelsLike).toString()+ "°C"
-        binding.tempMax.text = "Max Temp:"+decimalFormat.format(weather.main.tempMax).toString()+"°C"
-        binding.tempMin.text = "Min Temp:"+decimalFormat.format(weather.main.tempMin).toString()+"°C"
+        binding.feelsLike.text =
+            "Feels Like: " + decimalFormat.format(weather.main.feelsLike).toString() + "°C"
+        binding.tempMax.text =
+            "Max Temp:" + decimalFormat.format(weather.main.tempMax).toString() + "°C"
+        binding.tempMin.text =
+            "Min Temp:" + decimalFormat.format(weather.main.tempMin).toString() + "°C"
         binding.sunrise.text = SimpleDateFormat("hh:mm aa")
-            .format(Date((weather.sys.sunrise)*1000))
+            .format(Date((weather.sys.sunrise) * 1000))
         binding.sunset.text = SimpleDateFormat("hh:mm aa")
-            .format(Date((weather.sys.sunset)*1000))
-        binding.wind.text = weather.wind.speed.toString()+"m/s"
-        binding.pressure.text = weather.main.pressure.toString()+"hPa"
-        binding.humidity.text = weather.main.humidity.toString()+"%"
+            .format(Date((weather.sys.sunset) * 1000))
+        binding.wind.text = weather.wind.speed.toString() + "m/s"
+        binding.pressure.text = weather.main.pressure.toString() + "hPa"
+        binding.humidity.text = weather.main.humidity.toString() + "%"
 
         binding.icWeather?.let {
             Glide.with(this)
@@ -164,21 +183,34 @@ class MainActivity : AppCompatActivity() , LocationListener {
 
     private fun getLocation() {
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
+        if ((ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED)
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                locationPermissionCode
+            )
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5000f, this)
     }
+
     override fun onLocationChanged(location: Location) {
         getWeatherForCurrentLocation(location)
     }
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == locationPermissionCode) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
-            }
-            else {
+            } else {
                 Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
             }
         }
