@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_gradient"
@@ -12,9 +13,9 @@
         android:id="@+id/addressContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:layout_marginTop="24dp"
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -23,48 +24,65 @@
             android:id="@+id/address"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bengaluru"
-            android:textSize="24dp" />
+            android:textSize="24dp"
+            tools:text="Bengaluru" />
 
         <TextView
             android:id="@+id/updated_at"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="20 April 2012, 20:08 PM"
-            android:textSize="14dp" />
+            android:textSize="14dp"
+            tools:text="20 April 2012, 20:08 PM" />
+
+        <TextView
+            android:id="@+id/add_to_fav"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add to Favourite"
+            android:textColor="@color/colorPrimary"
+            android:textSize="16dp"
+            android:textStyle="bold"
+            android:visibility="invisible" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/searchContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:gravity="center"
         android:orientation="horizontal"
         android:visibility="gone"
-        android:layout_marginTop="24dp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:weightSum="5"
         app:layout_constraintEnd_toStartOf="@+id/ic_weather"
-        app:layout_constraintTop_toTopOf="parent"
-        android:weightSum="5">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/address_edit_text"
             android:layout_width="0dp"
-            android:imeOptions="flagNoExtractUi"
             android:layout_height="wrap_content"
+            android:layout_weight="4"
             android:gravity="center"
-            android:orientation="vertical"
-            android:layout_weight="4"/>
+            android:imeOptions="flagNoExtractUi"
+            android:orientation="vertical" />
 
         <ImageView
             android:id="@+id/ic_search"
             android:layout_width="0dp"
             android:layout_height="50dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_search"
             android:layout_gravity="end"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_search" />
     </LinearLayout>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="addressContainer, searchContainer" />
 
     <ImageView
         android:id="@+id/ic_edit_location"
@@ -76,33 +94,55 @@
         app:layout_constraintStart_toEndOf="@+id/addressContainer"
         app:layout_constraintTop_toTopOf="@+id/addressContainer" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/favourite_place_rv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@color/black_50"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/ic_weather"
+        app:layout_constraintTop_toBottomOf="@id/barrier"
+        tools:listitem="@layout/fav_list_item" />
+
     <ImageView
         android:id="@+id/ic_weather"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:scaleType="fitXY"
-        android:src="@drawable/pressure"
         app:layout_constraintBottom_toTopOf="@id/min_max"
         app:layout_constraintEnd_toStartOf="@id/overviewContainer"
-        app:layout_constraintStart_toEndOf="@id/addressContainer"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/loading_animation"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        app:layout_constraintBottom_toTopOf="@id/min_max"
+        app:layout_constraintEnd_toStartOf="@id/overviewContainer"
+        app:layout_constraintTop_toTopOf="parent"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/loading_animation" />
 
     <LinearLayout
         android:id="@+id/min_max"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:gravity="center"
         android:orientation="vertical"
-        app:layout_constraintStart_toEndOf="@id/addressContainer"
-        app:layout_constraintEnd_toStartOf="@id/overviewContainer"
         app:layout_constraintBottom_toTopOf="@id/detailsContainer"
-        android:layout_marginBottom="16dp">
+        app:layout_constraintEnd_toStartOf="@id/overviewContainer"
+        app:layout_constraintStart_toEndOf="@id/addressContainer">
 
         <TextView
             android:id="@+id/temp_min"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Min Temp: 05:05 AM" />
+            tools:text="Min Temp: 05:05 AM" />
 
         <Space
             android:layout_width="50dp"
@@ -112,7 +152,7 @@
             android:id="@+id/temp_max"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Max Temp: 05:05 PM" />
+            tools:text="Max Temp: 05:05 PM" />
     </LinearLayout>
 
 
@@ -130,8 +170,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Clear Sky"
-            android:textSize="18dp" />
+            android:textSize="18dp"
+            tools:text="Clear Sky" />
 
         <TextView
             android:id="@+id/temp"
@@ -139,16 +179,16 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:fontFamily="sans-serif-thin"
-            android:text="29°C"
-            android:textSize="90dp" />
+            android:textSize="90dp"
+            tools:text="29°C" />
 
         <TextView
             android:id="@+id/feels_like"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Feels like 23°C"
-            android:textSize="18dp" />
+            android:textSize="18dp"
+            tools:text="Feels like 23°C" />
 
     </LinearLayout>
 
@@ -192,8 +232,8 @@
                 android:id="@+id/sunrise"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="06:40 AM"
-                android:textSize="14dp" />
+                android:textSize="14dp"
+                tools:text="06:40 AM" />
         </LinearLayout>
 
         <Space
@@ -229,8 +269,8 @@
                 android:id="@+id/sunset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="06:40 AM"
-                android:textSize="14dp" />
+                android:textSize="14dp"
+                tools:text="06:40 AM" />
         </LinearLayout>
 
         <Space
@@ -266,8 +306,8 @@
                 android:id="@+id/wind"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="06:40 AM"
-                android:textSize="14dp" />
+                android:textSize="14dp"
+                tools:text="06:40 AM" />
         </LinearLayout>
 
         <Space
@@ -304,8 +344,8 @@
                 android:id="@+id/pressure"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="06:40 AM"
-                android:textSize="14dp" />
+                android:textSize="14dp"
+                tools:text="06:40 AM" />
         </LinearLayout>
 
         <Space
@@ -341,8 +381,8 @@
                 android:id="@+id/humidity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="06:40 AM"
-                android:textSize="14dp" />
+                android:textSize="14dp"
+                tools:text="06:40 AM" />
         </LinearLayout>
 
         <Space
@@ -382,28 +422,5 @@
                 android:textSize="14dp" />
         </LinearLayout>
     </LinearLayout>
-
-    <ProgressBar
-        android:id="@+id/loader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/errorText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Something went wrong"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/loader" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

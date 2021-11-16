@@ -11,8 +11,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProviders
@@ -25,27 +23,34 @@ import com.example.weather.data.model.WeatherModel
 import com.example.weather.databinding.MainActivityBinding
 import com.example.weather.ui.base.ViewModelFactory
 import com.example.weather.ui.main.viewmodel.MainViewModel
+import com.example.weather.utils.PreferenceHelper
 import com.example.weather.utils.Util.clickWithDebounce
 import com.example.weather.utils.Util.hideKeyboard
 import com.example.weather.utils.Util.showKeyboard
 import com.example.weather.utils.Status
+import com.example.weather.utils.Util
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MainActivity : AppCompatActivity(), LocationListener {
+class MainActivity : AppCompatActivity(), LocationListener,
+    FavouritePlacesAdapter.OnItemClickListener {
 
     private lateinit var viewModel: MainViewModel
     private lateinit var binding: MainActivityBinding
     private lateinit var searchCity: String
     private val TAG = "satyLogs"
-    var decimalFormat = DecimalFormat("##.#")
+    private var decimalFormat = DecimalFormat("##.#")
     private lateinit var locationManager: LocationManager
-    private val locationPermissionCode = 2
+    private val locationPermissionCode = 1001
+    private lateinit var prefHelper: PreferenceHelper
+    private lateinit var favouriteAdapter: FavouritePlacesAdapter
+    private var favouritePlaces: MutableList<String> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = MainActivityBinding.inflate(layoutInflater)
+        prefHelper = PreferenceHelper(context = this)
         setContentView(binding.root)
         setupViewModel()
 
@@ -55,15 +60,44 @@ class MainActivity : AppCompatActivity(), LocationListener {
         super.onStart()
 
         setupObservers()
-        if(viewModel.weatherLiveData.value==null) {
+
+        prefHelper.getLatestWeather()?.let { updateWeatherView(it) }
+
+        try {
+            favouritePlaces =
+                prefHelper.getArrayList(Util.FAV_PLACES_PREFERENCE) as MutableList<String>
+            favouritePlaces = favouritePlaces.toSet().toList() as MutableList<String>
+        } catch (ex: Exception) {
+            Log.d(TAG, "Empty Fav List")
+        }
+        favouriteAdapter = FavouritePlacesAdapter(favouritePlaces, this)
+        binding.favouritePlaceRv?.adapter = favouriteAdapter
+        if (viewModel.weatherLiveData.value == null) {
             getLocation()
         }
-        binding.icEditLocation?.clickWithDebounce {
+        addClickListener()
+    }
+
+    private fun addClickListener() {
+        binding.addToFav?.setOnClickListener {
+            if (favouritePlaces.contains(searchCity)) {
+                Toast.makeText(this, getString(R.string.city_already_added), Toast.LENGTH_SHORT)
+                    .show()
+            } else {
+                Toast.makeText(this, getString(R.string.city_added_to_fav), Toast.LENGTH_SHORT)
+                    .show()
+                favouritePlaces.add(searchCity)
+                prefHelper.saveArrayList(favouritePlaces, Util.FAV_PLACES_PREFERENCE)
+                favouriteAdapter.setFavList(favouritePlaces)
+            }
+        }
+
+        binding.icEditLocation.clickWithDebounce {
             binding.addressContainer.visibility = View.GONE
-            binding.searchContainer?.visibility = View.VISIBLE
-            binding.icEditLocation?.visibility = View.GONE
-            binding.addressEditText?.requestFocus()
-            binding.addressEditText?.showKeyboard()
+            binding.searchContainer.visibility = View.VISIBLE
+            binding.icEditLocation.visibility = View.GONE
+            binding.addressEditText.requestFocus()
+            binding.addressEditText.showKeyboard()
         }
 
         binding.icSearch?.clickWithDebounce {
@@ -73,7 +107,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
             binding.searchContainer?.visibility = View.GONE
             binding.icEditLocation?.visibility = View.VISIBLE
             viewModel.getWeather(searchCity)
-            //setupObservers()
         }
     }
 
@@ -82,8 +115,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
             this,
             ViewModelFactory(ApiHelper(RetrofitBuilder.apiService))
         )[MainViewModel::class.java]
-
-
     }
 
     private fun setupObservers() {
@@ -92,72 +123,37 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 when (resource.status) {
                     Status.SUCCESS -> {
                         Log.d(TAG, "Status.SUCCESS")
-                        binding.loader.visibility = View.GONE
+                        binding.loadingAnimation?.visibility = View.GONE
                         resource.data?.let { weather -> updateWeatherView(weather) }
                     }
                     Status.ERROR -> {
                         Log.d(TAG, "Status.ERROR")
                         if (resource.message?.contains("404") == true) {
                             Toast.makeText(
-                                this,
-                                getString(R.string.enter_valid_city),
+                                this, getString(R.string.enter_valid_city),
                                 Toast.LENGTH_SHORT
                             ).show()
                         } else {
                             Toast.makeText(
-                                this,
-                                getString(R.string.something_went_wrong),
+                                this, getString(R.string.something_went_wrong),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                        binding.loader.visibility = View.GONE
+                        binding.loadingAnimation?.visibility = View.GONE
                     }
                     Status.LOADING -> {
                         Log.d(TAG, "Status.LOADING")
-                        binding.loader.visibility = View.VISIBLE
+                        binding.loadingAnimation?.visibility = View.VISIBLE
                     }
                 }
             }
         })
     }
 
-    /*private fun getWeatherForCurrentLocation(location: Location) {
-        viewModel.getCurrentLocationWeather(location.latitude, location.longitude).observe(this, {
-            it?.let { resource ->
-                when (resource.status) {
-                    Status.SUCCESS -> {
-                        Log.d(TAG, "Status.SUCCESS")
-                        binding.loader.visibility = View.GONE
-                        resource.data?.let { weather -> updateWeatherView(weather) }
-                    }
-                    Status.ERROR -> {
-                        Log.d(TAG, "Status.ERROR")
-                        if (resource.message?.contains("404") == true) {
-                            Toast.makeText(
-                                this,
-                                getString(R.string.enter_valid_city),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            Toast.makeText(
-                                this,
-                                getString(R.string.something_went_wrong),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                        binding.loader.visibility = View.GONE
-                    }
-                    Status.LOADING -> {
-                        Log.d(TAG, "Status.LOADING")
-                        binding.loader.visibility = View.VISIBLE
-                    }
-                }
-            }
-        })
-    }*/
-
     private fun updateWeatherView(weather: WeatherModel) {
+        prefHelper.saveLatestWeather(weather)
         searchCity = weather.name
+        binding.addToFav.visibility = View.VISIBLE
         binding.address.text = weather.name
         binding.updatedAt.text = "Updated at: " + SimpleDateFormat("hh:mm aa")
             .format(Date((weather.dt) * 1000))
@@ -200,7 +196,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 locationPermissionCode
             )
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5000f, this)
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 5000f, this)
     }
 
     override fun onLocationChanged(location: Location) {
@@ -222,5 +218,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-
+    override fun onItemClickCallback(repoListItem: String?) {
+        if (repoListItem != null) {
+            viewModel.getWeather(repoListItem)
+        }
+    }
 }
